@@ -31,7 +31,7 @@ import id.myindo.platform.kawalwarga.ui.screens.DuesScreen
 import id.myindo.platform.kawalwarga.ui.screens.HomeScreen
 import id.myindo.platform.kawalwarga.ui.screens.LetterScreen
 import id.myindo.platform.kawalwarga.ui.screens.SecurityScreen
-import id.myindo.platform.kawalwarga.ui.theme.MyApplicationTheme
+import id.myindo.platform.kawalwarga.ui.theme.KawalWargaTheme
 import id.myindo.platform.kawalwarga.ui.theme.TealPrimary
 import id.myindo.platform.kawalwarga.ui.viewmodel.MainTab
 import id.myindo.platform.kawalwarga.ui.viewmodel.RtRwViewModel
@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyApplicationTheme {
+            KawalWargaTheme {
                 MainRtRwApp(viewModel = viewModel)
             }
         }
