@@ -1,0 +1,35 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Houses and community icon within safe zone 66dp (centered at 54,54) -->
+    <!-- Left Small House -->
+    <path
+        android:fillColor="#80CBC4"
+        android:pathData="M28,52 L42,40 L50,47 L50,68 L28,68 Z" />
+    <!-- Right Small House -->
+    <path
+        android:fillColor="#4DB6AC"
+        android:pathData="M58,47 L66,40 L80,52 L80,68 L58,68 Z" />
+    <!-- Center Main House / Balai Warga -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,28 L36,44 L43,44 L43,76 L65,76 L65,44 L72,44 Z" />
+    <!-- Center House Door -->
+    <path
+        android:fillColor="#004D40"
+        android:pathData="M50,60 L58,60 L58,76 L50,76 Z" />
+    <!-- Center House Window -->
+    <path
+        android:fillColor="#26A69A"
+        android:pathData="M50,48 L58,48 L58,54 L50,54 Z" />
+    <!-- Shield / Protection Badge Accent at bottom right -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M67,61 C67,61 77,59 77,67 C77,75 67,80 67,80 C67,80 57,75 57,67 C57,59 67,61 67,61 Z" />
+    <path
+        android:fillColor="#FF6F00"
+        android:pathData="M65.5,67 L68.5,67 L68.5,73 L65.5,73 Z M65.5,64 L68.5,64 L68.5,65.5 L65.5,65.5 Z" />
+</vector>
+

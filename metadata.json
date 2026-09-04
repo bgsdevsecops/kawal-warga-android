@@ -1,0 +1,7 @@
+{
+  "name": "Kawal Warga",
+  "description": "Aplikasi pelayanan warga RT/RW terpadu: pendataan warga, pengajuan surat pengantar, pelaporan keamanan siskamling, dan pembayaran iuran.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
