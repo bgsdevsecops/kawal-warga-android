@@ -2,6 +2,7 @@ package id.myindo.platform.kawalwarga.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,10 +18,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import id.myindo.platform.kawalwarga.core.auth.AuthState
+import id.myindo.platform.kawalwarga.core.model.Role
 import id.myindo.platform.kawalwarga.ui.components.MetricStatCard
 import id.myindo.platform.kawalwarga.ui.components.StatusBadge
 import id.myindo.platform.kawalwarga.ui.theme.*
@@ -37,12 +41,19 @@ fun HomeScreen(
     val reports by viewModel.allSecurityReports.collectAsState()
     val dues by viewModel.allDues.collectAsState()
     val announcements by viewModel.allAnnouncements.collectAsState()
+    val activeContext by viewModel.activeContext.collectAsState()
+    val authState by viewModel.authState.collectAsState()
+    val lastSynced by viewModel.lastSynced.collectAsState()
 
     var showSosDialog by remember { mutableStateOf(false) }
 
-    val pendingLetters = letters.count { it.status == "Diajukan" || it.status == "Diproses" }
-    val activeReports = reports.count { it.status != "Selesai" }
+    val userFullName = (authState as? AuthState.Authenticated)?.bootstrap?.user?.fullName ?: "Warga"
+    val communityInfo = (authState as? AuthState.Authenticated)?.bootstrap?.community
+
+    val pendingLettersCount = letters.count { it.status == "Diajukan" || it.status == "Diproses" }
+    val activeReportsCount = reports.count { it.status != "Selesai" }
     val totalKasPaid = dues.filter { it.paymentStatus == "Lunas" }.sumOf { it.totalAmount }
+    val pendingDuesVerifCount = dues.count { it.paymentStatus == "Menunggu Verifikasi" }
 
     LazyColumn(
         modifier = modifier
@@ -51,7 +62,7 @@ fun HomeScreen(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Hero Neighborhood Banner
+        // Hero Dynamic Neighborhood Banner (driven by backend context)
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -95,67 +106,75 @@ fun HomeScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "RUKUN TETANGGA 02 / RW 05",
+                                        text = "RUKUN TETANGGA ${activeContext?.rtNumber ?: "02"} / RW ${activeContext?.rwNumber ?: "05"}",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF80CBC4),
                                         letterSpacing = 1.sp
                                     )
                                     Text(
-                                        text = "Kelurahan Sukamaju",
-                                        fontSize = 18.sp,
+                                        text = communityInfo?.name ?: "Paguyuban RW 05 Sukamaju",
+                                        fontSize = 17.sp,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = Color.White
                                     )
                                 }
                             }
+                        }
 
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Greeting and Active Role
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Selamat Datang,",
+                                    color = Color.White.copy(alpha = 0.8f),
+                                    fontSize = 12.sp
+                                )
+                                Text(
+                                    text = userFullName,
+                                    color = Color.White,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = Color.White.copy(alpha = 0.15f)
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color.White.copy(alpha = 0.25f)
                             ) {
                                 Text(
-                                    text = "Aktif",
-                                    color = Color(0xFFA7F3D0),
-                                    fontSize = 11.sp,
+                                    text = activeContext?.role?.displayName ?: "Warga",
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    color = Color.White,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Selamat datang di Portal Pelayanan Warga Terpadu. Akses surat, keamanan siskamling, dan iuran dalam satu aplikasi.",
-                            fontSize = 13.sp,
-                            color = Color.White.copy(alpha = 0.9f),
-                            lineHeight = 18.sp
-                        )
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // SOS Panic Button Alert Bar
-                        Button(
-                            onClick = { showSosDialog = true },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFDC2626),
-                                contentColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("panic_sos_button")
+                        // Last Synced Status bar
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.NotificationsActive,
-                                contentDescription = "SOS Alert",
-                                modifier = Modifier.size(18.dp)
+                                imageVector = Icons.Default.CloudDone,
+                                contentDescription = null,
+                                tint = Color(0xFF80CBC4),
+                                modifier = Modifier.size(14.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "TOMBOL DARURAT / PANIC SOS RT",
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 13.sp
+                                text = "Terakhir disinkronkan: ${viewModel.formatDate(lastSynced)}",
+                                color = Color(0xFFB2DFDB),
+                                fontSize = 10.sp
                             )
                         }
                     }
@@ -163,131 +182,256 @@ fun HomeScreen(
             }
         }
 
-        // Quick Stats Summary
+        // SOS Panic Alert Button Card (Long-press to activate)
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("sos_emergency_card"),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                elevation = CardDefaults.cardElevation(2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFD32F2F)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Campaign,
+                                contentDescription = "SOS",
+                                tint = Color.White,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Panggilan Darurat & SOS",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = "Tekan tombol untuk mengirim sinyal darurat ke keamanan RT",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                    Button(
+                        onClick = { showSosDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.testTag("btn_sos_trigger")
+                    ) {
+                        Text("KIRIM SOS", fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
+                    }
+                }
+            }
+        }
+
+        // Operational Overview Section (Adapts strictly to active Role)
         item {
             Text(
-                text = "Ringkasan Wilayah RT 02",
+                text = "Ringkasan Operasional (${activeContext?.role?.displayName})",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        item {
+            when (activeContext?.role) {
+                Role.BENDAHARA -> {
+                    // Bendahara overview
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            MetricStatCard(
+                                title = "Verifikasi Bukti",
+                                value = "$pendingDuesVerifCount",
+                                subtitle = "Menunggu dicek",
+                                icon = Icons.Default.PendingActions,
+                                accentColor = Color(0xFFF57C00),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { viewModel.setTab(MainTab.IURAN) }
+                            )
+                            MetricStatCard(
+                                title = "Kas Masuk",
+                                value = viewModel.formatRupiah(totalKasPaid),
+                                subtitle = "Bulan September",
+                                icon = Icons.Default.AccountBalanceWallet,
+                                accentColor = TealPrimary,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { viewModel.setTab(MainTab.IURAN) }
+                            )
+                        }
+                    }
+                }
+                Role.PETUGAS_KEAMANAN -> {
+                    // Security Officer overview
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            MetricStatCard(
+                                title = "Laporan Aktif",
+                                value = "$activeReportsCount",
+                                subtitle = "Perlu penanganan",
+                                icon = Icons.Default.Shield,
+                                accentColor = Color(0xFFE53935),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { viewModel.setTab(MainTab.KEAMANAN) }
+                            )
+                            MetricStatCard(
+                                title = "Ronda Malam",
+                                value = "Aktif",
+                                subtitle = "Pukul 22:00 WIB",
+                                icon = Icons.Default.NightlightRound,
+                                accentColor = Color(0xFF5E35B1),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { viewModel.setTab(MainTab.KEAMANAN) }
+                            )
+                        }
+                    }
+                }
+                Role.KETUA_RT, Role.KETUA_RW, Role.SEKRETARIS -> {
+                    // RT/RW Leader overview
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            MetricStatCard(
+                                title = "Surat Masuk",
+                                value = "$pendingLettersCount",
+                                subtitle = "Menunggu approval",
+                                icon = Icons.Default.Description,
+                                accentColor = Color(0xFF1976D2),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { viewModel.setTab(MainTab.SURAT) }
+                            )
+                            MetricStatCard(
+                                title = "Warga Scoped",
+                                value = "${citizens.size}",
+                                subtitle = "Terdaftar di sistem",
+                                icon = Icons.Default.People,
+                                accentColor = TealPrimary,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { viewModel.setTab(MainTab.WARGA) }
+                            )
+                        }
+                    }
+                }
+                else -> {
+                    // Warga overview
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            MetricStatCard(
+                                title = "Surat Aktif",
+                                value = "${letters.size}",
+                                subtitle = "Permohonan pengantar",
+                                icon = Icons.Default.Description,
+                                accentColor = Color(0xFF1976D2),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { viewModel.setTab(MainTab.SURAT) }
+                            )
+                            MetricStatCard(
+                                title = "Status Iuran",
+                                value = if (dues.any { it.paymentStatus == "Belum Bayar" }) "Ada Tagihan" else "Lunas",
+                                subtitle = "Iuran September 2026",
+                                icon = Icons.Default.AccountBalanceWallet,
+                                accentColor = if (dues.any { it.paymentStatus == "Belum Bayar" }) Color(0xFFE53935) else TealPrimary,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { viewModel.setTab(MainTab.IURAN) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Quick Service Actions Grid
+        item {
+            Text(
+                text = "Layanan Mandiri Warga",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                MetricStatCard(
-                    title = "Total Warga",
-                    value = "${citizens.size} Jiwa",
-                    subtitle = "${citizens.distinctBy { it.noKk }.size} Kepala Keluarga",
-                    icon = Icons.Default.People,
-                    accentColor = TealPrimary,
-                    modifier = Modifier.weight(1f)
-                )
-                MetricStatCard(
-                    title = "Surat Proses",
-                    value = "$pendingLetters Surat",
-                    subtitle = "${letters.size} Total Diajukan",
+                QuickActionItem(
                     icon = Icons.Default.Description,
-                    accentColor = AmberTertiary,
-                    modifier = Modifier.weight(1f)
+                    label = "Ajukan Surat",
+                    bgColor = Color(0xFFE3F2FD),
+                    iconColor = Color(0xFF1976D2),
+                    onClick = {
+                        viewModel.setTab(MainTab.SURAT)
+                        viewModel.openAddLetter()
+                    }
+                )
+                QuickActionItem(
+                    icon = Icons.Default.Payment,
+                    label = "Bayar Iuran",
+                    bgColor = Color(0xFFE8F5E9),
+                    iconColor = Color(0xFF388E3C),
+                    onClick = { viewModel.setTab(MainTab.IURAN) }
+                )
+                QuickActionItem(
+                    icon = Icons.Default.ReportProblem,
+                    label = "Lapor Fasum",
+                    bgColor = Color(0xFFFFF3E0),
+                    iconColor = Color(0xFFF57C00),
+                    onClick = {
+                        viewModel.setTab(MainTab.KEAMANAN)
+                        viewModel.openAddSecurityReport()
+                    }
+                )
+                QuickActionItem(
+                    icon = Icons.Default.NightlightRound,
+                    label = "Jadwal Ronda",
+                    bgColor = Color(0xFFEDE7F6),
+                    iconColor = Color(0xFF5E35B1),
+                    onClick = { viewModel.setTab(MainTab.KEAMANAN) }
                 )
             }
         }
 
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                MetricStatCard(
-                    title = "Laporan Aktif",
-                    value = "$activeReports Kasus",
-                    subtitle = "Siskamling & Fasum",
-                    icon = Icons.Default.Shield,
-                    accentColor = Color(0xFFE11D48),
-                    modifier = Modifier.weight(1f)
-                )
-                MetricStatCard(
-                    title = "Kas Terkumpul",
-                    value = viewModel.formatRupiah(totalKasPaid),
-                    subtitle = "Bulan September 2026",
-                    icon = Icons.Default.AccountBalanceWallet,
-                    accentColor = EmeraldSecondary,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        // Quick Action Navigations
-        item {
-            Text(
-                text = "Menu Layanan Utama",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    QuickMenuCard(
-                        title = "Daftar Warga",
-                        desc = "Database KK & NIK Warga",
-                        icon = Icons.Default.Groups,
-                        color = TealPrimary,
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("nav_warga_card"),
-                        onClick = { viewModel.setTab(MainTab.WARGA) }
-                    )
-                    QuickMenuCard(
-                        title = "Surat Pengantar",
-                        desc = "Buat & Cetak Surat RT",
-                        icon = Icons.Default.Assignment,
-                        color = Color(0xFF0284C7),
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("nav_surat_card"),
-                        onClick = { viewModel.setTab(MainTab.SURAT) }
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    QuickMenuCard(
-                        title = "Keamanan & Ronda",
-                        desc = "Laporan & Jadwal Pos Ronda",
-                        icon = Icons.Default.Security,
-                        color = Color(0xFFD97706),
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("nav_keamanan_card"),
-                        onClick = { viewModel.setTab(MainTab.KEAMANAN) }
-                    )
-                    QuickMenuCard(
-                        title = "Pembayaran Iuran",
-                        desc = "Bayar QRIS, Kas & Kwitansi",
-                        icon = Icons.Default.Payments,
-                        color = EmeraldSecondary,
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("nav_iuran_card"),
-                        onClick = { viewModel.setTab(MainTab.IURAN) }
-                    )
-                }
-            }
-        }
-
-        // Announcements Section
+        // Recent Community Announcements from Backend
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -295,15 +439,16 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Warta & Pengumuman RT",
+                    text = "Pengumuman & Informasi Warga",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "${announcements.size} Berita",
+                    text = "${announcements.size} Pengumuman",
                     fontSize = 12.sp,
-                    color = SlateTextMuted
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
@@ -315,126 +460,104 @@ fun HomeScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = if (announcement.priority == "Penting") Color(0xFFFEE2E2) else Color(0xFFE0F2F1)
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            StatusBadge(status = announcement.priority)
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = announcement.category,
-                                color = if (announcement.priority == "Penting") Color(0xFFDC2626) else TealPrimary,
                                 fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                         Text(
                             text = viewModel.formatShortDate(announcement.date),
                             fontSize = 11.sp,
-                            color = SlateTextMuted
+                            color = MaterialTheme.colorScheme.outline
                         )
                     }
-
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = announcement.title,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
+                        fontSize = 15.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = announcement.content,
-                        fontSize = 12.sp,
-                        color = SlateTextSecondary,
-                        lineHeight = 17.sp
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 18.sp
                     )
                 }
             }
         }
     }
 
-    // Panic SOS Trigger Dialog
+    // SOS Panic Dialog Confirmation
     if (showSosDialog) {
-        var selectedEmergency by remember { mutableStateOf("Kebakaran / Asap Tebal") }
-        var locationText by remember { mutableStateOf("Blok A / B / C Lingkungan RT 02") }
+        var selectedEmergencyCategory by remember { mutableStateOf("Keamanan / Pencurian") }
+        val categories = listOf("Keamanan / Pencurian", "Kebakaran", "Medis / Ambulans", "Bencana Alam")
 
         AlertDialog(
             onDismissRequest = { showSosDialog = false },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Warning,
-                    contentDescription = null,
-                    tint = Color(0xFFDC2626),
-                    modifier = Modifier.size(36.dp)
-                )
-            },
             title = {
-                Text(
-                    text = "Aktivasi Tombol Darurat RT",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = Color(0xFFD32F2F),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Konfirmasi Alarm SOS", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "Peringatan ini akan segera mengirim sinyal siaga darurat ke seluruh petugas satpam dan pengurus RT 02.",
-                        fontSize = 13.sp,
-                        color = SlateTextSecondary
+                        text = "Sinyal darurat akan dikirimkan ke Pos Keamanan & Pengurus RT dengan bukti tanda terima dari server.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-
-                    Text(text = "Jenis Situasi Darurat:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
-                    val emergencyTypes = listOf(
-                        "Kebakaran / Asap Tebal",
-                        "Pencurian / Maling Tertangkap",
-                        "Darurat Medis / Butuh Ambulans",
-                        "Bencana Banjir / Pohon Tumbang"
-                    )
-
-                    emergencyTypes.forEach { type ->
+                    Text("Pilih Jenis Darurat:", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    categories.forEach { cat ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (selectedEmergency == type) Color(0xFFFEE2E2) else Color.Transparent)
-                                .clickable { selectedEmergency = type }
-                                .padding(8.dp)
+                                .clickable { selectedEmergencyCategory = cat }
                         ) {
                             RadioButton(
-                                selected = selectedEmergency == type,
-                                onClick = { selectedEmergency = type },
-                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFDC2626))
+                                selected = selectedEmergencyCategory == cat,
+                                onClick = { selectedEmergencyCategory = cat }
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = type, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                            Text(text = cat, fontSize = 13.sp)
                         }
                     }
-
-                    OutlinedTextField(
-                        value = locationText,
-                        onValueChange = { locationText = it },
-                        label = { Text("Lokasi Kejadian") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
                 }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.triggerPanicSos(selectedEmergency, locationText)
+                        viewModel.triggerPanicSos(
+                            selectedEmergencyCategory,
+                            "Lingkungan RT ${activeContext?.rtNumber ?: "02"} / RW ${activeContext?.rwNumber ?: "05"}"
+                        )
                         showSosDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
                 ) {
-                    Text("KIRIM SINYAL SOS")
+                    Text("KIRIM SINYAL DARURAT", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -447,51 +570,40 @@ fun HomeScreen(
 }
 
 @Composable
-fun QuickMenuCard(
-    title: String,
-    desc: String,
+fun QuickActionItem(
     icon: ImageVector,
-    color: Color,
-    modifier: Modifier = Modifier,
+    label: String,
+    bgColor: Color,
+    iconColor: Color,
     onClick: () -> Unit
 ) {
-    Card(
-        modifier = modifier.clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(76.dp)
+            .clickable(onClick = onClick)
     ) {
-        Column(
-            modifier = Modifier.padding(14.dp)
+        Box(
+            modifier = Modifier
+                .size(54.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(bgColor),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(color.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = desc,
-                fontSize = 11.sp,
-                color = SlateTextSecondary,
-                lineHeight = 15.sp
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = iconColor,
+                modifier = Modifier.size(26.dp)
             )
         }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1
+        )
     }
 }

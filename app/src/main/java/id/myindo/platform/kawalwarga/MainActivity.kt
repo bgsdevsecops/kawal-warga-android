@@ -9,7 +9,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,11 +30,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import id.myindo.platform.kawalwarga.ui.screens.CitizenScreen
-import id.myindo.platform.kawalwarga.ui.screens.DuesScreen
-import id.myindo.platform.kawalwarga.ui.screens.HomeScreen
-import id.myindo.platform.kawalwarga.ui.screens.LetterScreen
-import id.myindo.platform.kawalwarga.ui.screens.SecurityScreen
+import id.myindo.platform.kawalwarga.core.auth.AuthState
+import id.myindo.platform.kawalwarga.core.model.Role
+import id.myindo.platform.kawalwarga.core.model.UserContext
+import id.myindo.platform.kawalwarga.core.sync.SyncState
+import id.myindo.platform.kawalwarga.ui.screens.*
 import id.myindo.platform.kawalwarga.ui.theme.KawalWargaTheme
 import id.myindo.platform.kawalwarga.ui.theme.TealPrimary
 import id.myindo.platform.kawalwarga.ui.viewmodel.MainTab
@@ -56,7 +60,12 @@ fun MainRtRwApp(viewModel: RtRwViewModel) {
     val currentTab by viewModel.currentTab.collectAsState()
     val userMessage by viewModel.userMessage.collectAsState()
     val isSosActive by viewModel.isSosAlertActive.collectAsState()
+    val activeContext by viewModel.activeContext.collectAsState()
+    val authState by viewModel.authState.collectAsState()
+    val syncState by viewModel.syncState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    var showContextSwitcher by remember { mutableStateOf(false) }
 
     LaunchedEffect(userMessage) {
         userMessage?.let {
@@ -73,12 +82,16 @@ fun MainRtRwApp(viewModel: RtRwViewModel) {
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { showContextSwitcher = true }
+                            .padding(vertical = 4.dp, horizontal = 2.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(32.dp)
-                                .clip(RoundedCornerShape(8.dp))
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(10.dp))
                                 .background(TealPrimary),
                             contentAlignment = Alignment.Center
                         ) {
@@ -86,18 +99,27 @@ fun MainRtRwApp(viewModel: RtRwViewModel) {
                                 imageVector = Icons.Default.Apartment,
                                 contentDescription = null,
                                 tint = Color.White,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                         Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Kawal Warga",
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 15.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = "Switch Context",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                             Text(
-                                text = "WargaKu RT/RW",
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "RT 02 / RW 05 Sukamaju",
+                                text = activeContext?.label ?: "Memuat scope wilayah...",
                                 fontSize = 11.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -105,18 +127,60 @@ fun MainRtRwApp(viewModel: RtRwViewModel) {
                     }
                 },
                 actions = {
+                    // Sync Status Indicator & Action
+                    IconButton(
+                        onClick = { viewModel.syncNow() },
+                        modifier = Modifier.testTag("sync_button")
+                    ) {
+                        if (syncState == SyncState.SYNCING) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = TealPrimary
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Sync,
+                                contentDescription = "Sinkronisasi Server",
+                                tint = if (syncState == SyncState.ERROR) Color.Red else TealPrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    // Context Switcher Chip / Avatar
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFE0F2F1),
-                        modifier = Modifier.padding(end = 8.dp)
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .clickable { showContextSwitcher = true }
+                            .testTag("role_context_chip")
                     ) {
-                        Text(
-                            text = currentTab.title,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TealPrimary,
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
+                        ) {
+                            Icon(
+                                imageVector = when (activeContext?.role) {
+                                    Role.BENDAHARA -> Icons.Default.AccountBalanceWallet
+                                    Role.PETUGAS_KEAMANAN -> Icons.Default.LocalPolice
+                                    Role.KETUA_RT, Role.KETUA_RW -> Icons.Default.AdminPanelSettings
+                                    Role.SEKRETARIS -> Icons.Default.Description
+                                    else -> Icons.Default.Person
+                                },
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = activeContext?.role?.displayName ?: "Warga",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -129,60 +193,67 @@ fun MainRtRwApp(viewModel: RtRwViewModel) {
                 containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp
             ) {
-                val navItems = listOf(
-                    NavItem(MainTab.BERANDA, Icons.Filled.Home, Icons.Outlined.Home, "Beranda"),
-                    NavItem(MainTab.WARGA, Icons.Filled.Groups, Icons.Outlined.Groups, "Warga"),
-                    NavItem(MainTab.SURAT, Icons.Filled.Assignment, Icons.Outlined.Assignment, "Surat"),
-                    NavItem(MainTab.KEAMANAN, Icons.Filled.Shield, Icons.Outlined.Shield, "Keamanan"),
-                    NavItem(MainTab.IURAN, Icons.Filled.Payments, Icons.Outlined.Payments, "Iuran")
-                )
-
-                navItems.forEach { item ->
-                    val selected = currentTab == item.tab
+                MainTab.values().forEach { tab ->
+                    val isSelected = currentTab == tab
                     NavigationBarItem(
-                        selected = selected,
-                        onClick = { viewModel.setTab(item.tab) },
                         icon = {
                             Icon(
-                                imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                contentDescription = item.label
+                                imageVector = getTabIcon(tab, isSelected),
+                                contentDescription = tab.title
                             )
                         },
                         label = {
                             Text(
-                                text = item.label,
-                                fontSize = 10.sp,
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                                text = tab.title,
+                                fontSize = 11.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                             )
                         },
+                        selected = isSelected,
+                        onClick = { viewModel.setTab(tab) },
+                        modifier = Modifier.testTag("tab_${tab.name.lowercase()}"),
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = TealPrimary,
                             selectedTextColor = TealPrimary,
-                            indicatorColor = Color(0xFFE0F2F1)
-                        ),
-                        modifier = Modifier.testTag("tab_${item.tab.name.lowercase()}")
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                        )
                     )
                 }
             }
         }
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Active Panic Alert Warning Bar
+            when (currentTab) {
+                MainTab.BERANDA -> HomeScreen(viewModel = viewModel)
+                MainTab.WARGA -> CitizenScreen(viewModel = viewModel)
+                MainTab.SURAT -> LetterScreen(viewModel = viewModel)
+                MainTab.KEAMANAN -> SecurityScreen(viewModel = viewModel)
+                MainTab.IURAN -> DuesScreen(viewModel = viewModel)
+            }
+
+            // Global SOS Emergency Active Banner
             AnimatedVisibility(
                 visible = isSosActive,
                 enter = fadeIn(),
-                exit = fadeOut()
+                exit = fadeOut(),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .padding(8.dp)
             ) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = Color(0xFFDC2626)
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFD32F2F)),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(8.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -194,42 +265,159 @@ fun MainRtRwApp(viewModel: RtRwViewModel) {
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = null,
                                 tint = Color.White,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "SIAGA SOS AKTIF: Petugas Ronda & Warga sedang merespon!",
-                                color = Color.White,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Column {
+                                Text(
+                                    text = "ALERT DARURAT SOS AKTIF!",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp
+                                )
+                                Text(
+                                    text = "Receipt server terkonfirmasi. Petugas ronda merapat ke lokasi.",
+                                    color = Color.White.copy(alpha = 0.9f),
+                                    fontSize = 11.sp
+                                )
+                            }
                         }
-                        IconButton(
+                        TextButton(
                             onClick = { viewModel.dismissSosAlert() },
-                            modifier = Modifier.size(28.dp)
+                            colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = "Dismiss", tint = Color.White)
+                            Text("Tutup", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
                 }
             }
+        }
+    }
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                when (currentTab) {
-                    MainTab.BERANDA -> HomeScreen(viewModel = viewModel)
-                    MainTab.WARGA -> CitizenScreen(viewModel = viewModel)
-                    MainTab.SURAT -> LetterScreen(viewModel = viewModel)
-                    MainTab.KEAMANAN -> SecurityScreen(viewModel = viewModel)
-                    MainTab.IURAN -> DuesScreen(viewModel = viewModel)
+    // Multi-role Context Switcher Modal
+    if (showContextSwitcher) {
+        val bootstrap = (authState as? AuthState.Authenticated)?.bootstrap
+        val availableContexts = bootstrap?.availableContexts ?: emptyList()
+
+        AlertDialog(
+            onDismissRequest = { showContextSwitcher = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.SwitchAccount,
+                        contentDescription = null,
+                        tint = TealPrimary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Ganti Context / Role", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "Akun Anda memiliki akses ke beberapa peran di lingkungan RT/RW. Pilih peran aktif:",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(availableContexts) { ctx ->
+                            val isCurrent = ctx.contextId == activeContext?.contextId
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        viewModel.switchContext(ctx.contextId)
+                                        showContextSwitcher = false
+                                    }
+                                    .border(
+                                        width = if (isCurrent) 2.dp else 1.dp,
+                                        color = if (isCurrent) TealPrimary else MaterialTheme.colorScheme.outlineVariant,
+                                        shape = RoundedCornerShape(12.dp)
+                                    ),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isCurrent) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = ctx.role.displayName,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = "Scope: RT ${ctx.rtNumber} / RW ${ctx.rwNumber}",
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    if (isCurrent) {
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = "Aktif",
+                                            tint = TealPrimary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    HorizontalDivider()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "SSO: Keycloak (htz-auth)",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                        TextButton(
+                            onClick = {
+                                viewModel.syncNow()
+                                showContextSwitcher = false
+                            }
+                        ) {
+                            Text("Sinkronkan", fontSize = 12.sp)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showContextSwitcher = false }) {
+                    Text("Tutup", fontWeight = FontWeight.Bold)
                 }
             }
-        }
+        )
     }
 }
 
-private data class NavItem(
-    val tab: MainTab,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector,
-    val label: String
-)
+private fun getTabIcon(tab: MainTab, isSelected: Boolean): ImageVector {
+    return when (tab) {
+        MainTab.BERANDA -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
+        MainTab.WARGA -> if (isSelected) Icons.Filled.People else Icons.Outlined.People
+        MainTab.SURAT -> if (isSelected) Icons.Filled.Description else Icons.Outlined.Description
+        MainTab.KEAMANAN -> if (isSelected) Icons.Filled.Shield else Icons.Outlined.Shield
+        MainTab.IURAN -> if (isSelected) Icons.Filled.AccountBalanceWallet else Icons.Outlined.AccountBalanceWallet
+    }
+}
