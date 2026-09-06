@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -35,6 +37,7 @@ import id.myindo.platform.kawalwarga.core.model.Role
 import id.myindo.platform.kawalwarga.core.model.UserContext
 import id.myindo.platform.kawalwarga.core.sync.SyncState
 import id.myindo.platform.kawalwarga.ui.screens.*
+import id.myindo.platform.kawalwarga.ui.theme.CivicAmberTertiary
 import id.myindo.platform.kawalwarga.ui.theme.KawalWargaTheme
 import id.myindo.platform.kawalwarga.ui.theme.TealPrimary
 import id.myindo.platform.kawalwarga.ui.viewmodel.MainTab
@@ -78,146 +81,172 @@ fun MainRtRwApp(viewModel: RtRwViewModel) {
         modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { showContextSwitcher = true }
-                            .padding(vertical = 4.dp, horizontal = 2.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(TealPrimary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Apartment,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "Kawal Warga",
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 15.sp,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Icon(
-                                    imageVector = Icons.Default.ArrowDropDown,
-                                    contentDescription = "Switch Context",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                            Text(
-                                text = activeContext?.label ?: "Memuat scope wilayah...",
-                                fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    // Sync Status Indicator & Action
-                    IconButton(
-                        onClick = { viewModel.syncNow() },
-                        modifier = Modifier.testTag("sync_button")
-                    ) {
-                        if (syncState == SyncState.SYNCING) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
-                                color = TealPrimary
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Sync,
-                                contentDescription = "Sinkronisasi Server",
-                                tint = if (syncState == SyncState.ERROR) Color.Red else TealPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-
-                    // Context Switcher Chip / Avatar
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .clickable { showContextSwitcher = true }
-                            .testTag("role_context_chip")
-                    ) {
+            Column {
+                TopAppBar(
+                    title = {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable { showContextSwitcher = true }
+                                .padding(vertical = 4.dp, horizontal = 2.dp)
                         ) {
-                            Icon(
-                                imageVector = when (activeContext?.role) {
-                                    Role.BENDAHARA -> Icons.Default.AccountBalanceWallet
-                                    Role.PETUGAS_KEAMANAN -> Icons.Default.LocalPolice
-                                    Role.KETUA_RT, Role.KETUA_RW -> Icons.Default.AdminPanelSettings
-                                    Role.SEKRETARIS -> Icons.Default.Description
-                                    else -> Icons.Default.Person
-                                },
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = activeContext?.role?.displayName ?: "Warga",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(RoundedCornerShape(11.dp))
+                                    .background(
+                                        Brush.linearGradient(
+                                            listOf(Color(0xFF0D5447), Color(0xFF136449))
+                                        )
+                                    )
+                                    .border(
+                                        BorderStroke(
+                                            1.dp,
+                                            CivicAmberTertiary.copy(alpha = 0.35f)
+                                        ),
+                                        RoundedCornerShape(11.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Apartment,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Kawal Warga",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.5.sp,
+                                        letterSpacing = (-0.2).sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowDropDown,
+                                        contentDescription = "Switch Context",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Text(
+                                    text = activeContext?.label ?: "Memuat scope wilayah...",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1
+                                )
+                            }
                         }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    },
+                    actions = {
+                        // Sync Status Indicator & Action
+                        IconButton(
+                            onClick = { viewModel.syncNow() },
+                            modifier = Modifier.testTag("sync_button")
+                        ) {
+                            if (syncState == SyncState.SYNCING) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                    color = TealPrimary
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Sync,
+                                    contentDescription = "Sinkronisasi Server",
+                                    tint = if (syncState == SyncState.ERROR) Color(0xFFD32F2F) else TealPrimary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+
+                        // Context Switcher Chip / Avatar
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .clickable { showContextSwitcher = true }
+                                .testTag("role_context_chip")
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
+                                Icon(
+                                    imageVector = when (activeContext?.role) {
+                                        Role.BENDAHARA -> Icons.Default.AccountBalanceWallet
+                                        Role.PETUGAS_KEAMANAN -> Icons.Default.LocalPolice
+                                        Role.KETUA_RT, Role.KETUA_RW -> Icons.Default.AdminPanelSettings
+                                        Role.SEKRETARIS -> Icons.Default.Description
+                                        else -> Icons.Default.Person
+                                    },
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = activeContext?.role?.displayName ?: "Warga",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
                 )
-            )
+                HorizontalDivider(
+                    thickness = 0.8.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)
+                )
+            }
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp
-            ) {
-                MainTab.values().forEach { tab ->
-                    val isSelected = currentTab == tab
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = getTabIcon(tab, isSelected),
-                                contentDescription = tab.title
+            Column {
+                HorizontalDivider(
+                    thickness = 0.8.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)
+                )
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 0.dp
+                ) {
+                    MainTab.values().forEach { tab ->
+                        val isSelected = currentTab == tab
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    imageVector = getTabIcon(tab, isSelected),
+                                    contentDescription = tab.title
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = tab.title,
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            },
+                            selected = isSelected,
+                            onClick = { viewModel.setTab(tab) },
+                            modifier = Modifier.testTag("tab_${tab.name.lowercase()}"),
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = TealPrimary,
+                                selectedTextColor = TealPrimary,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
                             )
-                        },
-                        label = {
-                            Text(
-                                text = tab.title,
-                                fontSize = 11.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                            )
-                        },
-                        selected = isSelected,
-                        onClick = { viewModel.setTab(tab) },
-                        modifier = Modifier.testTag("tab_${tab.name.lowercase()}"),
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = TealPrimary,
-                            selectedTextColor = TealPrimary,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer
                         )
-                    )
+                    }
                 }
             }
         }

@@ -13,87 +13,87 @@ import androidx.compose.ui.graphics.Color
  * and high legibility across all demographic age groups.
  */
 
-// --- Primary Civic Identity (Deep Civic Teal) ---
-val CivicTealPrimary = Color(0xFF00685E)
+// --- Primary Civic Identity (Sovereign Deep Emerald Teal) ---
+val CivicTealPrimary = Color(0xFF0D5447)
 val CivicTealOnPrimary = Color(0xFFFFFFFF)
-val CivicTealPrimaryContainer = Color(0xFFE2F7F4)
-val CivicTealOnPrimaryContainer = Color(0xFF00201D)
-val CivicTealInversePrimary = Color(0xFF80D5C7)
+val CivicTealPrimaryContainer = Color(0xFFE4F3EF)
+val CivicTealOnPrimaryContainer = Color(0xFF042B24)
+val CivicTealInversePrimary = Color(0xFF6ED8C2)
 
-// --- Secondary Identity (Community Emerald / Gotong Royong & Siskamling) ---
-val CivicEmeraldSecondary = Color(0xFF1B6D45)
+// --- Secondary Identity (Rich Jade / Gotong Royong & Siskamling) ---
+val CivicEmeraldSecondary = Color(0xFF136449)
 val CivicEmeraldOnSecondary = Color(0xFFFFFFFF)
-val CivicEmeraldSecondaryContainer = Color(0xFFD6F5E3)
-val CivicEmeraldOnSecondaryContainer = Color(0xFF002111)
+val CivicEmeraldSecondaryContainer = Color(0xFFDCF3E7)
+val CivicEmeraldOnSecondaryContainer = Color(0xFF042D1E)
 
-// --- Tertiary Identity (Administrative Seal & Official Notice Amber/Gold) ---
-val CivicAmberTertiary = Color(0xFFB45309)
+// --- Tertiary Identity (Refined Antique Gold / Heritage Bronze) ---
+val CivicAmberTertiary = Color(0xFF9A6711)
 val CivicAmberOnTertiary = Color(0xFFFFFFFF)
-val CivicAmberTertiaryContainer = Color(0xFFFEF3C7)
-val CivicAmberOnTertiaryContainer = Color(0xFF451A03)
+val CivicAmberTertiaryContainer = Color(0xFFFBF1D9)
+val CivicAmberOnTertiaryContainer = Color(0xFF382302)
 
-// --- Light Theme Neutral & Slate Surfaces ---
-val CivicSlateBackground = Color(0xFFF8FAFC) // Slate 50
+// --- Light Theme Neutral & Cashmere Slate Surfaces ---
+val CivicSlateBackground = Color(0xFFF7FAF8) // Refined cashmere/silk tint
 val CivicSlateSurface = Color(0xFFFFFFFF)
-val CivicSlateSurfaceVariant = Color(0xFFF1F5F9) // Slate 100
+val CivicSlateSurfaceVariant = Color(0xFFEEF4F1) // Soft sage tint
 val CivicSlateSurfaceContainerLowest = Color(0xFFFFFFFF)
-val CivicSlateSurfaceContainerLow = Color(0xFFF8FAFC)
-val CivicSlateSurfaceContainer = Color(0xFFF1F5F9)
-val CivicSlateSurfaceContainerHigh = Color(0xFFE2E8F0) // Slate 200
-val CivicSlateSurfaceContainerHighest = Color(0xFFCBD5E1) // Slate 300
-val CivicSlateBorder = Color(0xFFE2E8F0)
-val CivicSlateOutlineVariant = Color(0xFFF1F5F9)
+val CivicSlateSurfaceContainerLow = Color(0xFFF7FAF8)
+val CivicSlateSurfaceContainer = Color(0xFFEEF4F1)
+val CivicSlateSurfaceContainerHigh = Color(0xFFE2ECE7)
+val CivicSlateSurfaceContainerHighest = Color(0xFFD6E3DD)
+val CivicSlateBorder = Color(0xFFDFE7E3) // Hairline crisp border
+val CivicSlateOutlineVariant = Color(0xFFEBF1EE)
 
-val CivicTextPrimary = Color(0xFF0F172A) // Slate 900 - Crisp high contrast
-val CivicTextSecondary = Color(0xFF475569) // Slate 600 - Secondary metadata
-val CivicTextMuted = Color(0xFF64748B) // Slate 500 - Timestamp & hints
+val CivicTextPrimary = Color(0xFF111917) // Charcoal Black - High contrast luxury
+val CivicTextSecondary = Color(0xFF455651) // Deep Muted Slate
+val CivicTextMuted = Color(0xFF687C76) // Subtle caption & timestamp
 
-// --- Error & Emergency Identity (SOS & Siskamling Alerts) ---
-val CivicError = Color(0xFFBA1A1A)
+// --- Error & Emergency Identity (Dignified Ruby & Crimson) ---
+val CivicError = Color(0xFFB91C1C)
 val CivicOnError = Color(0xFFFFFFFF)
-val CivicErrorContainer = Color(0xFFFFDAD6)
-val CivicOnErrorContainer = Color(0xFF410002)
+val CivicErrorContainer = Color(0xFFFEE2E2)
+val CivicOnErrorContainer = Color(0xFF450A0A)
 val CivicEmergency = Color(0xFFDC2626)
 val CivicEmergencyBg = Color(0xFFFEF2F2)
 
-// --- Dark Theme Palette (Institutional Midnight Slate) ---
-val CivicDarkPrimary = Color(0xFF80D5C7)
-val CivicDarkOnPrimary = Color(0xFF003731)
-val CivicDarkPrimaryContainer = Color(0xFF004F47)
-val CivicDarkOnPrimaryContainer = Color(0xFF9CF2E3)
+// --- Dark Theme Palette (Obsidian Forest & Luminous Emerald) ---
+val CivicDarkPrimary = Color(0xFF6FD2BE)
+val CivicDarkOnPrimary = Color(0xFF04382F)
+val CivicDarkPrimaryContainer = Color(0xFF084B3F)
+val CivicDarkOnPrimaryContainer = Color(0xFF8CF0DB)
 
-val CivicDarkSecondary = Color(0xFF8BCE9D)
-val CivicDarkOnSecondary = Color(0xFF00391C)
-val CivicDarkSecondaryContainer = Color(0xFF06522E)
-val CivicDarkOnSecondaryContainer = Color(0xFFD6F5E3)
+val CivicDarkSecondary = Color(0xFF7DD5A7)
+val CivicDarkOnSecondary = Color(0xFF043820)
+val CivicDarkSecondaryContainer = Color(0xFF0A4E2F)
+val CivicDarkOnSecondaryContainer = Color(0xFF9DF0C4)
 
-val CivicDarkTertiary = Color(0xFFFFB77C)
-val CivicDarkOnTertiary = Color(0xFF552500)
-val CivicDarkTertiaryContainer = Color(0xFF783700)
-val CivicDarkOnTertiaryContainer = Color(0xFFFFDCC4)
+val CivicDarkTertiary = Color(0xFFF3C77D)
+val CivicDarkOnTertiary = Color(0xFF482D00)
+val CivicDarkTertiaryContainer = Color(0xFF674200)
+val CivicDarkOnTertiaryContainer = Color(0xFFFFDF9E)
 
-val CivicDarkBackground = Color(0xFF0B131E) // Deep midnight slate
-val CivicDarkSurface = Color(0xFF131D2B)
-val CivicDarkSurfaceVariant = Color(0xFF1E293B)
-val CivicDarkSurfaceContainerLowest = Color(0xFF070D16)
-val CivicDarkSurfaceContainerLow = Color(0xFF0F1724)
-val CivicDarkSurfaceContainer = Color(0xFF131D2B)
-val CivicDarkSurfaceContainerHigh = Color(0xFF1E2A3A)
-val CivicDarkSurfaceContainerHighest = Color(0xFF283649)
-val CivicDarkBorder = Color(0xFF334155)
-val CivicDarkTextPrimary = Color(0xFFF1F5F9)
-val CivicDarkTextSecondary = Color(0xFF94A3B8)
-val CivicDarkTextMuted = Color(0xFF64748B)
+val CivicDarkBackground = Color(0xFF0D1412) // Obsidian Forest
+val CivicDarkSurface = Color(0xFF141F1C)
+val CivicDarkSurfaceVariant = Color(0xFF1B2A26)
+val CivicDarkSurfaceContainerLowest = Color(0xFF080D0B)
+val CivicDarkSurfaceContainerLow = Color(0xFF101917)
+val CivicDarkSurfaceContainer = Color(0xFF141F1C)
+val CivicDarkSurfaceContainerHigh = Color(0xFF1C2B27)
+val CivicDarkSurfaceContainerHighest = Color(0xFF243631)
+val CivicDarkBorder = Color(0xFF283A35)
+val CivicDarkTextPrimary = Color(0xFFF1F6F4)
+val CivicDarkTextSecondary = Color(0xFF9FB6AF)
+val CivicDarkTextMuted = Color(0xFF6E867F)
 
-// --- Civic Administration Status Tokens ---
-val StatusApprovedBg = Color(0xFFDCFCE7)
-val StatusApprovedText = Color(0xFF14532D)
-val StatusPendingBg = Color(0xFFFEF3C7)
-val StatusPendingText = Color(0xFF92400E)
-val StatusProgressBg = Color(0xFFE0F2FE)
-val StatusProgressText = Color(0xFF0369A1)
-val StatusRejectedBg = Color(0xFFFEE2E2)
-val StatusRejectedText = Color(0xFF991B1B)
+// --- Civic Administration Status Tokens (Refined Pastel + High-Contrast Ink) ---
+val StatusApprovedBg = Color(0xFFE2F7EB)
+val StatusApprovedText = Color(0xFF0E5A35)
+val StatusPendingBg = Color(0xFFFEF3D6)
+val StatusPendingText = Color(0xFF875200)
+val StatusProgressBg = Color(0xFFE0F1FD)
+val StatusProgressText = Color(0xFF035D96)
+val StatusRejectedBg = Color(0xFFFDECEB)
+val StatusRejectedText = Color(0xFF8C1D18)
 val StatusEmergency = CivicEmergency
 
 // --- Legacy & Aliased Tokens for Seamless Backward Compatibility ---

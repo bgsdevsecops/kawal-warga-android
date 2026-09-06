@@ -3,6 +3,7 @@ package id.myindo.platform.kawalwarga.ui.screens
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -85,20 +86,23 @@ fun LetterScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                            .padding(14.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         CitizenStatItem("Diajukan", "$pendingCount", AmberTertiary)
-                        Divider(modifier = Modifier.height(30.dp).width(1.dp))
+                        HorizontalDivider(modifier = Modifier.height(32.dp).width(1.dp))
                         CitizenStatItem("Diproses", "$progressCount", Color(0xFF0284C7))
-                        Divider(modifier = Modifier.height(30.dp).width(1.dp))
+                        HorizontalDivider(modifier = Modifier.height(32.dp).width(1.dp))
                         CitizenStatItem("Disetujui", "$approvedCount", EmeraldSecondary)
-                        Divider(modifier = Modifier.height(30.dp).width(1.dp))
+                        HorizontalDivider(modifier = Modifier.height(32.dp).width(1.dp))
                         CitizenStatItem("Total", "${allLetters.size}", TealPrimary)
                     }
                 }
@@ -129,14 +133,16 @@ fun LetterScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Description,
@@ -159,9 +165,10 @@ fun LetterScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { viewModel.openLetterPreview(letter) },
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(

@@ -1,6 +1,8 @@
 package id.myindo.platform.kawalwarga.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -67,7 +69,9 @@ fun HomeScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -75,8 +79,9 @@ fun HomeScreen(
                         .background(
                             Brush.linearGradient(
                                 colors = listOf(
-                                    TealPrimary,
-                                    Color(0xFF004D40)
+                                    Color(0xFF07382F),
+                                    Color(0xFF0D5447),
+                                    Color(0xFF136449)
                                 )
                             )
                         )
@@ -92,12 +97,13 @@ fun HomeScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(44.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.White.copy(alpha = 0.2f)),
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color.White.copy(alpha = 0.15f))
+                                        .border(0.8.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(12.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.LocationCity,
+                                        imageVector = Icons.Default.Apartment,
                                         contentDescription = null,
                                         tint = Color.White,
                                         modifier = Modifier.size(24.dp)
@@ -105,17 +111,26 @@ fun HomeScreen(
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
-                                    Text(
-                                        text = "RUKUN TETANGGA ${activeContext?.rtNumber ?: "02"} / RW ${activeContext?.rwNumber ?: "05"}",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF80CBC4),
-                                        letterSpacing = 1.sp
-                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = CivicAmberTertiary.copy(alpha = 0.22f),
+                                        border = BorderStroke(0.8.dp, CivicAmberTertiary.copy(alpha = 0.45f))
+                                    ) {
+                                        Text(
+                                            text = "RUKUN TETANGGA ${activeContext?.rtNumber ?: "02"} / RW ${activeContext?.rwNumber ?: "05"}",
+                                            fontSize = 9.5.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFFDE68A),
+                                            letterSpacing = 0.8.sp,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(3.dp))
                                     Text(
                                         text = communityInfo?.name ?: "Paguyuban RW 05 Sukamaju",
-                                        fontSize = 17.sp,
-                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 17.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = (-0.2).sp,
                                         color = Color.White
                                     )
                                 }
@@ -133,24 +148,27 @@ fun HomeScreen(
                             Column {
                                 Text(
                                     text = "Selamat Datang,",
-                                    color = Color.White.copy(alpha = 0.8f),
-                                    fontSize = 12.sp
+                                    color = Color.White.copy(alpha = 0.75f),
+                                    fontSize = 12.sp,
+                                    letterSpacing = 0.1.sp
                                 )
                                 Text(
                                     text = userFullName,
                                     color = Color.White,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontSize = 16.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = (-0.2).sp
                                 )
                             }
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
-                                color = Color.White.copy(alpha = 0.25f)
+                                color = Color.White.copy(alpha = 0.18f),
+                                border = BorderStroke(0.8.dp, Color.White.copy(alpha = 0.3f))
                             ) {
                                 Text(
                                     text = activeContext?.role?.displayName ?: "Warga",
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = Color.White,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                 )
@@ -167,14 +185,14 @@ fun HomeScreen(
                             Icon(
                                 imageVector = Icons.Default.CloudDone,
                                 contentDescription = null,
-                                tint = Color(0xFF80CBC4),
+                                tint = Color(0xFF6ED8C2),
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Terakhir disinkronkan: ${viewModel.formatDate(lastSynced)}",
-                                color = Color(0xFFB2DFDB),
-                                fontSize = 10.sp
+                                color = Color(0xFFB4EBE0),
+                                fontSize = 10.5.sp
                             )
                         }
                     }
@@ -189,8 +207,9 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .testTag("sos_emergency_card"),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                elevation = CardDefaults.cardElevation(2.dp)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.65f)),
+                border = BorderStroke(1.dp, Color(0xFFD32F2F).copy(alpha = 0.35f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -205,16 +224,17 @@ fun HomeScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFD32F2F)),
+                                .size(46.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFFD32F2F))
+                                .border(0.8.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(14.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Campaign,
                                 contentDescription = "SOS",
                                 tint = Color.White,
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(26.dp)
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
@@ -222,12 +242,12 @@ fun HomeScreen(
                             Text(
                                 text = "Panggilan Darurat & SOS",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
+                                fontSize = 14.5.sp,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
                             Text(
-                                text = "Tekan tombol untuk mengirim sinyal darurat ke keamanan RT",
-                                fontSize = 11.sp,
+                                text = "Sinyal darurat tersambung pos pengamanan RT",
+                                fontSize = 11.5.sp,
                                 color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
                             )
                         }
@@ -238,7 +258,7 @@ fun HomeScreen(
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.testTag("btn_sos_trigger")
                     ) {
-                        Text("KIRIM SOS", fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
+                        Text("KIRIM SOS", fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
                     }
                 }
             }
@@ -456,9 +476,10 @@ fun HomeScreen(
         items(announcements) { announcement ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
@@ -580,14 +601,17 @@ fun QuickActionItem(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(76.dp)
+            .width(78.dp)
+            .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
+            .padding(vertical = 4.dp)
     ) {
         Box(
             modifier = Modifier
                 .size(54.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(bgColor),
+                .background(bgColor)
+                .border(0.8.dp, iconColor.copy(alpha = 0.22f), RoundedCornerShape(16.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -597,11 +621,11 @@ fun QuickActionItem(
                 modifier = Modifier.size(26.dp)
             )
         }
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(7.dp))
         Text(
             text = label,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1
         )
